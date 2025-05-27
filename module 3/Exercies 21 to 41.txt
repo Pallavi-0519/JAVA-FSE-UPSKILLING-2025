@@ -1,0 +1,331 @@
+// 21. Custom Exception
+class InvalidAgeException extends Exception {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+class TestCustomException {
+    public static void main(String[] args) {
+        int age = 16;
+        try {
+            if (age < 18) {
+                throw new InvalidAgeException("Age must be at least 18.");
+            }
+            System.out.println("Access granted.");
+        } catch (InvalidAgeException e) {
+            System.out.println("Exception caught: " + e.getMessage());
+        }
+    }
+}
+
+// 22. File Writing
+import java.io.*;
+import java.util.Scanner;
+
+class WriteToFile {
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter a string to write to file: ");
+        String input = sc.nextLine();
+        FileWriter fw = new FileWriter("output.txt");
+        fw.write(input);
+        fw.close();
+        System.out.println("Data written to output.txt");
+    }
+}
+
+// 23. File Reading
+import java.io.*;
+
+class ReadFromFile {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader("output.txt"));
+        String line;
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+        br.close();
+    }
+}
+
+// 24. ArrayList Example
+import java.util.*;
+
+class ArrayListDemo {
+    public static void main(String[] args) {
+        ArrayList<String> students = new ArrayList<>();
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of students: ");
+        int n = sc.nextInt();
+        sc.nextLine();
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter name: ");
+            students.add(sc.nextLine());
+        }
+        System.out.println("Students: " + students);
+    }
+}
+
+// 25. HashMap Example
+import java.util.*;
+
+class HashMapDemo {
+    public static void main(String[] args) {
+        HashMap<Integer, String> studentMap = new HashMap<>();
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of entries: ");
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter ID: ");
+            int id = sc.nextInt();
+            sc.nextLine();
+            System.out.print("Enter name: ");
+            String name = sc.nextLine();
+            studentMap.put(id, name);
+        }
+        System.out.print("Enter ID to retrieve name: ");
+        int searchId = sc.nextInt();
+        System.out.println("Name: " + studentMap.getOrDefault(searchId, "Not found"));
+    }
+}
+
+// 26. Thread Creation
+class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println(Thread.currentThread().getName() + " is running");
+        }
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread();
+        MyThread t2 = new MyThread();
+        t1.start();
+        t2.start();
+    }
+}
+
+// 27. Lambda Expressions
+import java.util.*;
+
+class LambdaSort {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("John", "Alice", "Bob");
+        names.sort((a, b) -> a.compareTo(b));
+        System.out.println("Sorted names: " + names);
+    }
+}
+
+// 28. Stream API
+import java.util.*;
+import java.util.stream.*;
+
+class StreamFilter {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+        List<Integer> evens = numbers.stream()
+                                     .filter(n -> n % 2 == 0)
+                                     .collect(Collectors.toList());
+        System.out.println("Even numbers: " + evens);
+    }
+}
+
+// 29. Records (Java 16+)
+record Person(String name, int age) {}
+
+class RecordDemo {
+    public static void main(String[] args) {
+        List<Person> people = List.of(new Person("Alice", 25), new Person("Bob", 17));
+        people.stream()
+              .filter(p -> p.age() > 18)
+              .forEach(System.out::println);
+    }
+}
+
+// 30. Pattern Matching for switch (Java 21)
+class PatternMatchDemo {
+    static void checkType(Object obj) {
+        switch (obj) {
+            case Integer i -> System.out.println("Integer: " + i);
+            case String s -> System.out.println("String: " + s);
+            case Double d -> System.out.println("Double: " + d);
+            default -> System.out.println("Unknown type");
+        }
+    }
+
+    public static void main(String[] args) {
+        checkType(42);
+        checkType("Hello");
+        checkType(3.14);
+    }
+}
+
+// 31. Basic JDBC Connection
+import java.sql.*;
+
+class JDBCConnectionDemo {
+    public static void main(String[] args) throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:students.db");
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM students");
+        while (rs.next()) {
+            System.out.println(rs.getInt("id") + ": " + rs.getString("name"));
+        }
+        conn.close();
+    }
+}
+
+// 32. Insert and Update Operations in JDBC
+class StudentDAO {
+    Connection conn;
+
+    StudentDAO() throws SQLException {
+        conn = DriverManager.getConnection("jdbc:sqlite:students.db");
+    }
+
+    void insert(int id, String name) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO students VALUES (?, ?)");
+        ps.setInt(1, id);
+        ps.setString(2, name);
+        ps.executeUpdate();
+    }
+
+    void update(int id, String name) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement("UPDATE students SET name=? WHERE id=?");
+        ps.setString(1, name);
+        ps.setInt(2, id);
+        ps.executeUpdate();
+    }
+}
+
+// 33. Transaction Handling in JDBC
+class MoneyTransfer {
+    public void transfer(Connection conn, int fromId, int toId, double amount) throws SQLException {
+        try {
+            conn.setAutoCommit(false);
+            PreparedStatement debit = conn.prepareStatement("UPDATE accounts SET balance = balance - ? WHERE id = ?");
+            debit.setDouble(1, amount);
+            debit.setInt(2, fromId);
+            debit.executeUpdate();
+
+            PreparedStatement credit = conn.prepareStatement("UPDATE accounts SET balance = balance + ? WHERE id = ?");
+            credit.setDouble(1, amount);
+            credit.setInt(2, toId);
+            credit.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        }
+    }
+}
+
+// 34. Create and Use Java Modules
+// module-info.java (in com.utils)
+module com.utils {
+    exports com.utils;
+}
+
+// module-info.java (in com.greetings)
+module com.greetings {
+    requires com.utils;
+}
+
+// 35. TCP Client-Server Chat (Simplified)
+// Server.java
+import java.net.*;
+import java.io.*;
+
+class Server {
+    public static void main(String[] args) throws IOException {
+        ServerSocket ss = new ServerSocket(6666);
+        Socket s = ss.accept();
+        DataInputStream dis = new DataInputStream(s.getInputStream());
+        String str = dis.readUTF();
+        System.out.println("Message: " + str);
+        ss.close();
+    }
+}
+
+// Client.java
+import java.net.*;
+import java.io.*;
+
+class Client {
+    public static void main(String[] args) throws IOException {
+        Socket s = new Socket("localhost", 6666);
+        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+        dos.writeUTF("Hello Server");
+        dos.flush();
+        dos.close();
+        s.close();
+    }
+}
+
+// 36. HTTP Client API (Java 11+)
+import java.net.http.*;
+import java.net.URI;
+
+class HttpClientDemo {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(new URI("https://api.github.com"))
+            .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Status: " + response.statusCode());
+        System.out.println("Body: " + response.body());
+    }
+}
+
+// 37. Using javap to Inspect Bytecode
+class BytecodeExample {
+    public void display() {
+        System.out.println("Hello bytecode");
+    }
+}
+
+// Compile & run: javac BytecodeExample.java && javap -c BytecodeExample
+
+// 38. Decompile a Class File
+// Write HelloWorld.java, compile to HelloWorld.class
+// Use JD-GUI/CFR to open .class and view source code
+
+// 39. Reflection in Java
+import java.lang.reflect.*;
+
+class ReflectionDemo {
+    public static void main(String[] args) throws Exception {
+        Class<?> clazz = Class.forName("java.util.ArrayList");
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            System.out.println("Method: " + method.getName());
+        }
+    }
+}
+
+// 40. Virtual Threads (Java 21)
+class VirtualThreadDemo {
+    public static void main(String[] args) {
+        for (int i = 0; i < 100000; i++) {
+            Thread.startVirtualThread(() -> System.out.println("Running virtual thread"));
+        }
+    }
+}
+
+// 41. Executor Service and Callable
+import java.util.concurrent.*;
+
+class CallableDemo {
+    public static void main(String[] args) throws Exception {
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        Callable<String> task = () -> "Task result";
+        Future<String> result = service.submit(task);
+        System.out.println(result.get());
+        service.shutdown();
+    }
+}
